@@ -1,0 +1,39 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - 12.x
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Backend Machine
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.BACKEND_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            APP_DIR="~/laravel"
+
+            # Check if the app directory exists; if not, clone it using the secret
+            if [ ! -d "$APP_DIR" ]; then
+              echo "Cloning Laravel app to $APP_DIR..."
+              git clone ${{ secrets.REPO_URL }} $APP_DIR
+            fi
+
+            # Navigate to the app directory
+            cd $APP_DIR
+
+            # Ensure the script is executable
+            chmod +x deploy.sh
+
+            # Run the deployment script
+            ./deploy.sh
