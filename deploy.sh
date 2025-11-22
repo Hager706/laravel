@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# git pull origin 12.x
+git pull origin 12.x
 sudo apt update
 sudo apt install -y php php-cli php-mbstring php-xml php-zip unzip
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
