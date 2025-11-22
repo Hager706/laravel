@@ -16,10 +16,10 @@ jobs:
       - name: Deploy to Backend Machine
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.BACKEND_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             APP_DIR="~/laravel"
 
