@@ -21,16 +21,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            APP_DIR="~/laravel"
+            APP_DIR="/home/ubuntu/laravel" 
 
-            # Check if the app directory exists; if not, clone it using the secret
+            # If directory doesn't exist, clone it
             if [ ! -d "$APP_DIR" ]; then
               echo "Cloning Laravel app to $APP_DIR..."
               git clone ${{ secrets.REPO_URL }} $APP_DIR
+              cd $APP_DIR
+            else
+              # If it exists, just pull updates
+              echo "Pulling updates in $APP_DIR..."
+              cd $APP_DIR
+              git pull origin 12.x  # Pull without cloning again
             fi
-
-            # Navigate to the app directory
-            cd $APP_DIR
 
             # Ensure the script is executable
             chmod +x deploy.sh
