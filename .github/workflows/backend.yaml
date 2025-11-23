@@ -74,28 +74,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Create .env file here (not from repo!)
-      - name: Create .env file
-        run: |
-          cat > .env << 'EOF'
-          APP_NAME=Laravel
-          APP_ENV=production
-          APP_KEY=
-          APP_DEBUG=false
-
-          DB_CONNECTION=mysql
-          DB_HOST=__DB_HOST__
-          DB_PORT=3306
-          DB_DATABASE=__DB_DATABASE__
-          DB_USERNAME=__DB_USERNAME__
-          DB_PASSWORD=__DB_PASSWORD__
-
-          CACHE_DRIVER=file
-          SESSION_DRIVER=file
-          QUEUE_CONNECTION=sync
-          EOF
-
-      - name: Replace Tokens
+      - name: Replace Tokens in .env
         uses: cschleiden/replace-tokens@v1
         with:
           files: ".env"
@@ -107,7 +86,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
 
-      - name: Deploy to Server
+      - name: Ensure repo exists on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -116,34 +95,27 @@ jobs:
           port: 22
           script: |
             APP_DIR="/home/ubuntu/laravel"
-
-            # Clone if doesn't exist
             if [ ! -d "$APP_DIR" ]; then
               git clone ${{ secrets.REPO_URL }} $APP_DIR
-              cd $APP_DIR
-              git checkout 12.x
-            else
-              cd $APP_DIR
-              # Just pull - no .env conflicts anymore!
-              git pull origin 12.x
             fi
 
-      - name: Upload .env
+      - name: Upload .env to server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           source: ".env"
           target: "/home/ubuntu/laravel"
-          overwrite: true
 
-      - name: Run deploy script
+      - name: Run deploy script on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             cd /home/ubuntu/laravel
             chmod +x deploy.sh

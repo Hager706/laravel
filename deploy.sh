@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+git config pull.rebase false
 
 # Update system and install PHP 8.2 + MySQL extension
 sudo apt update
