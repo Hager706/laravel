@@ -27,4 +27,3 @@ git pull origin 12.x
 
 # Run migrations (.env is already populated by workflow)
 php artisan migrate --force
-git config --global pull.rebase false
