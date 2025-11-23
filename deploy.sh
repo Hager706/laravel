@@ -39,9 +39,7 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Install PHP 8.2 only if not already installed
 if ! command_exists php || ! php -v | grep -q "PHP 8.2"; then
-    echo "📦 Installing PHP 8.2..."
     sudo apt update
     sudo apt install -y software-properties-common
     sudo add-apt-repository -y ppa:ondrej/php
@@ -56,43 +54,33 @@ if ! command_exists php || ! php -v | grep -q "PHP 8.2"; then
         php8.2-mysql \
         unzip
 
-    # Set PHP 8.2 as default
     sudo update-alternatives --set php /usr/bin/php8.2
-    echo "✅ PHP 8.2 installed successfully"
+    echo "PHP 8.2 installed successfully"
 else
-    echo "✅ PHP 8.2 already installed"
+    echo "PHP 8.2 already installed"
 fi
 
 # Install Composer if not present
 if ! command_exists composer; then
-    echo "📦 Installing Composer..."
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-    echo "✅ Composer installed successfully"
+    echo "Composer installed successfully"
 else
-    echo "✅ Composer already installed"
+    echo "Composer already installed"
 fi
 
-# Configure Git (only once)
 git config pull.rebase false 2>/dev/null || true
 
 # Install/Update Composer dependencies
-echo "📦 Installing Composer dependencies..."
 composer install --no-dev --optimize-autoloader --no-interaction
 
-# Generate app key if not exists
 if ! grep -q "APP_KEY=base64:" .env 2>/dev/null; then
-    echo "🔑 Generating application key..."
     php artisan key:generate --force
 fi
 
-# Create storage directories if they don't exist
-echo "📁 Creating storage directories..."
-mkdir -p storage/framework/{sessions,views,cache}
-mkdir -p storage/logs
-mkdir -p bootstrap/cache
+# # Create storage directories if they don't exist
+# echo "Creating storage directories..."
+# mkdir -p storage/framework/{sessions,views,cache}
+# mkdir -p storage/logs
+# mkdir -p bootstrap/cache
 
-# Set proper permissions
-echo "🔒 Setting permissions..."
-chmod -R 775 storage bootstrap/cache
-
-echo "✅ Deployment setup completed successfully!"
+echo "Deployment setup completed successfully!"

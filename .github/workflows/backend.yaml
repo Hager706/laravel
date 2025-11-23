@@ -81,7 +81,7 @@ jobs:
       - name: Create .env File
         run: |
           cat > .env << EOF
-          APP_URL=http://${{ secrets.EC2_HOST }}
+          APP_KEY=
           DB_CONNECTION=mysql
           DB_HOST=${{ secrets.DB_HOST }}
           DB_PORT=3306
@@ -109,8 +109,6 @@ jobs:
               cd $APP_DIR
             else
               cd $APP_DIR
-              git fetch origin
-              git reset --hard origin/$BRANCH
               git pull origin $BRANCH
             fi
             chmod +x deploy.sh
@@ -139,8 +137,4 @@ jobs:
           script: |
             cd /home/ubuntu/laravel
             php artisan migrate --force
-            php artisan config:clear
-            php artisan cache:clear
-
-
             echo "Application is ready!"
