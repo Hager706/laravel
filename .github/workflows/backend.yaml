@@ -108,6 +108,20 @@ jobs:
           source: ".env"
           target: "/home/ubuntu/laravel/"
 
+      - name: Remove .env from Git Tracking on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/laravel
+            git rm --cached .env  # Remove from tracking
+            echo ".env" >> .gitignore
+            git add .gitignore
+            git commit -m "Ignore .env to prevent overwrite"
+
       - name: Run Deployment Script
         uses: appleboy/ssh-action@v1.0.3
         with:
