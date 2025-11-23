@@ -1,3 +1,64 @@
+# name: Deploy Backend
+
+# on:
+#   push:
+#     branches:
+#       - 12.x
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+
+#       - name: Replace Tokens in .env
+#         uses: cschleiden/replace-tokens@v1
+#         with:
+#           files: ".env"
+#         env:
+#           #DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+#           DB_HOST: ${{ secrets.DB_HOST }}
+#           DB_USERNAME: ${{ secrets.DB_USERNAME }}
+#           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+#           DB_DATABASE: ${{ secrets.DB_DATABASE }}
+
+#       - name: Upload .env to server
+#         uses: appleboy/scp-action@v0.1.4
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           port: 22
+#           source: ".env"
+#           target: "/home/ubuntu/laravel"
+
+#       - name: Deploy to Backend Machine
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           port: 22
+#           script: |
+#             APP_DIR="/home/ubuntu/laravel"
+
+#             if [ ! -d "$APP_DIR" ]; then
+#               echo "Cloning Laravel app..."
+#               git clone ${{ secrets.REPO_URL }} $APP_DIR
+#               cd $APP_DIR
+#             else
+#               cd $APP_DIR
+#               echo "Stashing local changes and pulling updates..."
+#               git stash push -m "Auto-stash before pull"
+#               git pull origin 12.x
+#               git stash pop
+#             fi
+
+#             chmod +x deploy.sh
+#             ./deploy.sh
+
 name: Deploy Backend
 
 on:
@@ -18,23 +79,12 @@ jobs:
         with:
           files: ".env"
         env:
-          #DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
 
-      - name: Upload .env to server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: ".env"
-          target: "/home/ubuntu/laravel"
-
-      - name: Deploy to Backend Machine
+      - name: Clone Repo on Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -43,18 +93,33 @@ jobs:
           port: 22
           script: |
             APP_DIR="/home/ubuntu/laravel"
-
             if [ ! -d "$APP_DIR" ]; then
               echo "Cloning Laravel app..."
               git clone ${{ secrets.REPO_URL }} $APP_DIR
-              cd $APP_DIR
-            else
-              cd $APP_DIR
-              echo "Stashing local changes and pulling updates..."
-              git stash push -m "Auto-stash before pull"
-              git pull origin 12.x
-              git stash pop
             fi
 
+      - name: Upload .env to Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: ".env"
+          target: "/home/ubuntu/laravel/"
+
+      - name: Run Deployment Script
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/laravel
+            echo "Stashing and pulling updates..."
+            git stash push -m "Auto-stash before pull"
+            git pull origin 12.x
+            git stash pop
             chmod +x deploy.sh
             ./deploy.sh
