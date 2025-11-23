@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-git config pull.rebase false
+git config --global pull.rebase false
 
 # Update system and install PHP 8.2 + MySQL extension
 sudo apt update
@@ -17,7 +17,7 @@ if ! command -v composer &> /dev/null; then
   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 fi
 # git config pull.rebase false
-git config pull.rebase false
+git config --global pull.rebase false
 
 git pull origin 12.x
 
@@ -27,4 +27,4 @@ git pull origin 12.x
 
 # Run migrations (.env is already populated by workflow)
 php artisan migrate --force
-git config pull.rebase false
+git config --global pull.rebase false
