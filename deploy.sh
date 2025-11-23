@@ -17,7 +17,7 @@ if ! command -v composer &> /dev/null; then
 fi
 # git config pull.rebase false
 
-git pull origin 12.x
+#git pull origin 12.x
 
 
 # Install/update dependencies
