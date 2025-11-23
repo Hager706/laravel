@@ -14,20 +14,30 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Replace Tokens in .env
-        # uses: cschleiden/replace-token@v1
-        # with:
-        #   files: ".env"
-        # env:
-        #   DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
-        #   DB_HOST: ${{ secrets.DB_HOST }}
-        #   DB_USERNAME: ${{ secrets.DB_USERNAME }}
-        #   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        #   DB_DATABASE: ${{ secrets.DB_DATABASE }}
-        run: |
-          sed -i "s/__DB_HOST__/${{ secrets.DB_HOST }}/g" .env
-          sed -i "s/__DB_DATABASE__/${{ secrets.DB_DATABASE }}/g" .env
-          sed -i "s/__DB_USERNAME__/${{ secrets.DB_USERNAME }}/g" .env
-          sed -i "s/__DB_PASSWORD__/${{ secrets.DB_PASSWORD }}/g" .env
+        uses: cschleiden/replace-tokens@v1
+        with:
+          files: ".env"
+        env:
+          #DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        # run: |
+        #   sed -i "s/__DB_HOST__/${{ secrets.DB_HOST }}/g" .env
+        #   sed -i "s/__DB_DATABASE__/${{ secrets.DB_DATABASE }}/g" .env
+        #   sed -i "s/__DB_USERNAME__/${{ secrets.DB_USERNAME }}/g" .env
+        #   sed -i "s/__DB_PASSWORD__/${{ secrets.DB_PASSWORD }}/g" .env
+
+      - name: Upload .env to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: ".env"
+          target: "/home/ubuntu/laravel/.env"
 
       - name: Deploy to Backend Machine
         uses: appleboy/ssh-action@v1.0.3
