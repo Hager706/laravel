@@ -109,6 +109,8 @@ jobs:
               cd $APP_DIR
             else
               cd $APP_DIR
+              git fetch origin
+              git reset --hard origin/$BRANCH
               git pull origin $BRANCH
             fi
             chmod +x deploy.sh
