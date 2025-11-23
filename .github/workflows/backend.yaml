@@ -141,22 +141,6 @@ jobs:
             php artisan migrate --force
             php artisan config:clear
             php artisan cache:clear
-            php artisan route:clear
-            php artisan view:clear
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
 
-            sudo chown -R www-data:www-data storage bootstrap/cache
-            sudo chmod -R 775 storage bootstrap/cache
-
-            # Restart services if they exist
-            if systemctl is-active --quiet php8.2-fpm; then
-              sudo systemctl restart php8.2-fpm
-            fi
-
-            if systemctl is-active --quiet nginx; then
-              sudo systemctl restart nginx
-            fi
 
             echo "Application is ready!"
