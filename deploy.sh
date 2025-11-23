@@ -4,6 +4,7 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# 1. PHP 8.2
 if ! command_exists php || ! php -v | grep -q "PHP 8.2"; then
     sudo apt update
     sudo apt install -y software-properties-common
@@ -17,14 +18,19 @@ else
     echo "PHP 8.2 already available"
 fi
 
+# 2. Composer
+COMPOSER_DIR="$HOME/.local/bin"
+mkdir -p "$COMPOSER_DIR"
+export PATH="$COMPOSER_DIR:$PATH"
+
 if ! command_exists composer; then
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-    echo "Composer installed successfully"
+    curl -sS https://getcomposer.org/installer | php -- --install-dir="$COMPOSER_DIR" --filename=composer
+    echo "Composer installed successfully in $COMPOSER_DIR"
 else
     echo "Composer already installed"
 fi
 
-
+# 3. Nginx
 if ! command_exists nginx; then
     sudo apt install -y nginx
     echo "Nginx installed"
@@ -35,7 +41,7 @@ fi
 sudo rm -f /etc/nginx/sites-enabled/*
 sudo rm -f /etc/nginx/sites-available/laravel
 
-# 2. Create fresh Laravel Nginx config
+# 4. Laravel Nginx config
 sudo tee /etc/nginx/sites-available/laravel >/dev/null <<EOF
 server {
     listen 80;
@@ -59,10 +65,9 @@ server {
 }
 EOF
 
-# 3. Enable the new site
 sudo ln -sf /etc/nginx/sites-available/laravel /etc/nginx/sites-enabled/laravel
 
-# 4. Verify & reload
+# 5. Verify & reload services
 sudo nginx -t
 PHP_FPM_SERVICE=$(systemctl list-units --type=service --no-pager | grep -oE 'php[0-9\.]+-fpm.service' | head -n 1)
 
@@ -75,8 +80,10 @@ fi
 echo "Using FPM service: $PHP_FPM_SERVICE"
 sudo systemctl restart $PHP_FPM_SERVICE
 sudo systemctl restart nginx
+
 git config pull.rebase false 2>/dev/null || true
 
+# 6. Composer install
 composer install --no-dev --optimize-autoloader --no-interaction
 
 echo "Deployment setup completed successfully!"

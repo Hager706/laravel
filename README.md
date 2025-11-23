@@ -39,4 +39,4 @@ The GitHub Actions pipeline (`deploy-backend.yml`) automates the deployment of t
 
 ### Screenshots
 ![Create Database](assets/pic1.png)
-![Create Database](assets/pic1.png)
+![Create Database](assets/pic2.png)
