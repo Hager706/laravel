@@ -105,7 +105,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: ".env"
-          target: "/home/ubuntu/laravel/.env"
+          target: "/home/ubuntu/laravel/"
 
       - name: Run deploy script on server
         uses: appleboy/ssh-action@v1.0.3
