@@ -17,7 +17,7 @@ else
     echo "PHP 8.2 already available"
 fi
 
-وif ! command_exists composer; then
+if ! command_exists composer; then
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
     echo "Composer installed successfully"
 else
