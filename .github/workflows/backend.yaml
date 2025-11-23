@@ -13,20 +13,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Show .env Before Replacement
-        run: |
-          echo "DEBUG: .env before replacement:"
-          cat .env | grep -E "DB_CONNECTION|DB_HOST|DB_USERNAME|DB_DATABASE"
       - name: Replace Tokens in .env
         uses: cschleiden/replace-tokens@v1
         with:
           files: ".env"
         env:
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          #DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
           DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          #DB_CONNECTION: ${{ secrets.DB_CONNECTION}}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
 
       - name: Deploy to Backend Machine
         uses: appleboy/ssh-action@v1.0.3
@@ -45,10 +41,10 @@ jobs:
             else
               cd $APP_DIR
               echo "Stashing local changes and pulling updates..."
-              git stash push -m "Auto-stash before pull"  # Save changes
-              git pull origin 12.x  # Pull safely
-              git stash pop  # Restore changes
+              git stash push -m "Auto-stash before pull"
+              git pull origin 12.x
+              git stash pop
             fi
 
             chmod +x deploy.sh
-            ./deploy.sh  # Runs your script as is
+            ./deploy.sh
