@@ -81,7 +81,7 @@ jobs:
       - name: Create .env File
         run: |
           cat > .env << EOF
-          APP_KEY=
+          APP_KEY=${{ secrets.APP_KEY }}
           DB_CONNECTION=mysql
           DB_HOST=${{ secrets.DB_HOST }}
           DB_PORT=3306
@@ -90,6 +90,16 @@ jobs:
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           EOF
           echo ".env file created successfully"
+
+      - name: Upload .env to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: ".env"
+          target: "/home/ubuntu/laravel"
 
       - name: Deploy to Backend Machine
         uses: appleboy/ssh-action@v1.0.3
@@ -103,7 +113,6 @@ jobs:
             APP_DIR="/home/ubuntu/laravel"
             REPO_URL="${{ secrets.REPO_URL }}"
             BRANCH="12.x"
-            # Step 1: Clone or update repository
             if [ ! -d "$APP_DIR" ]; then
               git clone -b $BRANCH $REPO_URL $APP_DIR
               cd $APP_DIR
@@ -116,19 +125,6 @@ jobs:
             chmod +x deploy.sh
             ./deploy.sh
 
-            echo "Deployment completed successfully!"
-
-      - name: Upload .env to Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: ".env"
-          target: "/home/ubuntu/laravel/"
-          overwrite: true
-
       - name: Run Migrations and Final Setup
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -139,4 +135,10 @@ jobs:
           script: |
             cd /home/ubuntu/laravel
             php artisan migrate --force
-            echo "Application is ready!"
+             php artisan config:clear
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
+            sudo systemctl restart php8.2-fpm
+            sudo systemctl restart nginx
+            echo "Application ready!"
