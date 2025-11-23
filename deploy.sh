@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-# Update system and install PHP 8.2 + MySQL extension
+# Update system and install PHP 8.2 (if not already)
 sudo apt update
 sudo apt install -y software-properties-common
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update
-sudo apt install -y php8.2 php8.2-cli php8.2-mbstring php8.2-xml php8.2-zip php8.2-curl php8.2-mysql unzip
+sudo apt install -y php8.2 php8.2-cli php8.2-mbstring php8.2-xml php8.2-zip php8.2-curl unzip
 
 # Ensure PHP 8.2 is default
 sudo update-alternatives --set php /usr/bin/php8.2
@@ -21,6 +21,5 @@ git pull origin 12.x
 # Install/update dependencies
 /usr/local/bin/composer install --no-dev --optimize-autoloader
 
-
-# Run migrations
+# Run migrations (assumes .env is configured with RDS details)
 php artisan migrate --force

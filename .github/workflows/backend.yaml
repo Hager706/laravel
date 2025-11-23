@@ -13,6 +13,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Replace Tokens in .env.production
+        uses: cschleiden/replace-token@v1
+        with:
+          files: ".env"
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+
       - name: Deploy to Backend Machine
         uses: appleboy/ssh-action@v1.0.3
         with:
