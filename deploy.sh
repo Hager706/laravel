@@ -64,7 +64,16 @@ sudo ln -sf /etc/nginx/sites-available/laravel /etc/nginx/sites-enabled/laravel
 
 # 4. Verify & reload
 sudo nginx -t
-sudo systemctl restart php8.2-fpm
+PHP_FPM_SERVICE=$(systemctl list-units --type=service --no-pager | grep -oE 'php[0-9\.]+-fpm.service' | head -n 1)
+
+if [ -z "$PHP_FPM_SERVICE" ]; then
+    echo "Installing PHP-FPM..."
+    sudo apt install -y php8.2-fpm
+    PHP_FPM_SERVICE="php8.2-fpm.service"
+fi
+
+echo "Using FPM service: $PHP_FPM_SERVICE"
+sudo systemctl restart $PHP_FPM_SERVICE
 sudo systemctl restart nginx
 git config pull.rebase false 2>/dev/null || true
 
