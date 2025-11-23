@@ -84,7 +84,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
 
-      - name: Clone Repo on Server
+      - name: Ensure repo exists on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -94,11 +94,10 @@ jobs:
           script: |
             APP_DIR="/home/ubuntu/laravel"
             if [ ! -d "$APP_DIR" ]; then
-              echo "Cloning Laravel app..."
               git clone ${{ secrets.REPO_URL }} $APP_DIR
             fi
 
-      - name: Upload .env to Server
+      - name: Upload .env to server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -106,9 +105,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: ".env"
-          target: "/home/ubuntu/laravel/"
+          target: "/home/ubuntu/laravel/.env"
 
-      - name: Remove .env from Git Tracking on Server
+      - name: Run deploy script on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -117,23 +116,5 @@ jobs:
           port: 22
           script: |
             cd /home/ubuntu/laravel
-            git rm --cached .env  # Remove from tracking
-            echo ".env" >> .gitignore
-            git add .gitignore
-            git commit -m "Ignore .env to prevent overwrite"
-
-      - name: Run Deployment Script
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            cd /home/ubuntu/laravel
-            echo "Stashing and pulling updates..."
-            git stash push -m "Auto-stash before pull"
-            git pull origin 12.x
-            git stash pop
             chmod +x deploy.sh
             ./deploy.sh
