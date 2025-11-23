@@ -32,22 +32,23 @@ else
     echo "Nginx already installed"
 fi
 
-NGINX_CONF="/etc/nginx/sites-available/laravel.conf"
+sudo rm -f /etc/nginx/sites-enabled/*
+sudo rm -f /etc/nginx/sites-available/laravel
 
-if [ ! -f "$NGINX_CONF" ]; then
-sudo bash -c "cat > $NGINX_CONF" << 'EOF'
+# 2. Create fresh Laravel Nginx config
+sudo tee /etc/nginx/sites-available/laravel >/dev/null <<EOF
 server {
     listen 80;
     server_name _;
-
     root /home/ubuntu/laravel/public;
+
     index index.php index.html;
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
-    location ~ \.php$ {
+    location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.2-fpm.sock;
     }
@@ -58,10 +59,12 @@ server {
 }
 EOF
 
-    sudo ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/
-fi
+# 3. Enable the new site
+sudo ln -sf /etc/nginx/sites-available/laravel /etc/nginx/sites-enabled/laravel
 
+# 4. Verify & reload
 sudo nginx -t
+sudo systemctl restart php8.2-fpm
 sudo systemctl restart nginx
 git config pull.rebase false 2>/dev/null || true
 
