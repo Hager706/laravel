@@ -15,6 +15,7 @@ sudo update-alternatives --set php /usr/bin/php8.2
 if ! command -v composer &> /dev/null; then
   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 fi
+git config pull.rebase false
 
 echo "Pull latest code..."
 git stash push -m "auto-stash" || true
