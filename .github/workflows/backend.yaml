@@ -91,15 +91,6 @@ jobs:
           EOF
           echo ".env file created successfully"
 
-      - name: Upload .env to server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: ".env"
-          target: "/home/ubuntu/laravel"
 
       - name: Deploy to Backend Machine
         uses: appleboy/ssh-action@v1.0.3
@@ -124,6 +115,17 @@ jobs:
             fi
             chmod +x deploy.sh
             ./deploy.sh
+
+
+      - name: Upload .env to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: ".env"
+          target: "/home/ubuntu/laravel"
 
       - name: Run Migrations and Final Setup
         uses: appleboy/ssh-action@v1.0.3
