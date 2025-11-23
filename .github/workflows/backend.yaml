@@ -94,11 +94,21 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            APP_DIR="/home/ubuntu/laravel"
-            if [ ! -d "$APP_DIR" ]; then
-              git clone ${{ secrets.REPO_URL }} $APP_DIR
-            fi
+             APP_DIR="/home/ubuntu/laravel"
 
+             if [ ! -d "$APP_DIR" ]; then
+               echo "Cloning Laravel app..."
+               git clone ${{ secrets.REPO_URL }} $APP_DIR
+               cd $APP_DIR
+             else
+               cd $APP_DIR
+               echo "Stashing local changes and pulling updates..."
+               git stash push -m "Auto-stash before pull"
+               git pull origin 12.x
+               git stash pop
+             fi
+               chmod +x deploy.sh
+                ./deploy.sh
       - name: Upload .env to server
         uses: appleboy/scp-action@v0.1.4
         with:
